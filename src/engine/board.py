@@ -4,19 +4,10 @@ from src.engine.piece import (
 
 
 class BoardPosition:
-    """Stores a chess piece's rank and file.
+    """Stores a chess board position's rank, file, and piece (if any)."""
+    __slots__ = ("rank", "file", "piece")
 
-    Constructor:
-
-        BoardPosition(rank, file)
-
-    Functions:
-
-        rank()     -> chr
-        file()     -> int
-        position() -> (chr, int)
-    """
-    def __init__(self, rank: chr, file: int) -> None:
+    def __init__(self, rank: chr, file: int, piece: Piece = None) -> None:
         self.rank = rank
         self.file = file
         self.piece = None
@@ -27,20 +18,9 @@ class BoardPosition:
         return "."
         # return f"{self.rank}{self.file}"
     
-    def rank(self) -> chr:
-        """Returns the position's rank as a character."""
-        return self.rank
-    
-    def file(self) -> int:
-        """Returns the position's file as an integer."""
-        return self.file
-    
     def position(self) -> tuple:
         """Returns the position as a (character, integer) tuple."""
         return (self.rank, self.file)
-    
-    def piece(self) -> Piece:
-        return self.piece
     
     def set_piece(self, new_piece) -> bool:
         self.piece = new_piece
@@ -48,6 +28,8 @@ class BoardPosition:
 
 class Board:
     """Store information on the location of each piece."""
+    __slots__ = ("squares")
+    
     def __init__(self):
         self.squares = tuple(tuple(BoardPosition(rank, file)
                                    for rank in self.all_ranks())

@@ -14,22 +14,12 @@ class TextColor:
 
 class Piece(ABC):
     """Abstract class detailing the properties of a chess piece."""
-    def __str__(self) -> str:
+    __slots__ = ("color", "value", "fen_char")
+
+    def __str__(self):
         if self.color == PieceColor.WHITE:
-            return TextColor.YELLOW + self.fen_char() + TextColor.END
-        return TextColor.BLUE + self.fen_char() + TextColor.END
-
-    def fen_char(self) -> chr:
-        """Returns the character representing this piece in FEN notation."""
-        pass
-
-    def value(self) -> int:
-        """Returns the value of a piece in points of material."""
-        pass
-    
-    def color(self) -> PieceColor:
-        """Returns the color of a piece."""
-        return self.color
+            return TextColor.YELLOW + self.fen_char + TextColor.END
+        return TextColor.BLUE + self.fen_char + TextColor.END
     
     @abstractmethod
     def possible_moves(self, rank: chr, file: int) -> list[tuple]:
@@ -42,16 +32,15 @@ class Piece(ABC):
 
 class Pawn(Piece):
     """Class detailing the behavior of a pawn."""
+    __slots__ = ("color", "direction", "has_not_moved")
+
+    value = 1
+    fen_char = 'p'
+
     def __init__(self, color: PieceColor):
         self.color = color
         self.direction = 1 if color == PieceColor.WHITE else -1
         self.has_not_moved = True
-    
-    def fen_char(self) -> chr:
-        return 'p'
-    
-    def value(self) -> int:
-        return 1
     
     def move(self) -> None:
         self.has_not_moved = False
@@ -74,14 +63,13 @@ class Pawn(Piece):
 
 class Knight(Piece):
     """Class detailing the behavior of a knight."""
+    __slots__ = ("color")
+
+    value = 3
+    fen_char = 'N'
+
     def __init__(self, color: PieceColor):
         self.color = color
-    
-    def fen_char(self) -> chr:
-        return 'N'
-    
-    def value(self) -> int:
-        return 3
     
     def move(self) -> None:
         return
@@ -112,7 +100,6 @@ class Knight(Piece):
                 moves.append[(chr(ord(rank)+1), file+2)]
         return moves
 
-
     def possible_captures(self, rank: chr, file: int) -> list[tuple]:
         """Returns a list of all valid position tuples that this piece
         can capture a piece on."""
@@ -121,15 +108,13 @@ class Knight(Piece):
 
 class Bishop(Piece):
     """Class detailing the behavior of a bishop."""
+    __slots__ = ("color")
+
+    value = 3
+    fen_char = 'B'
+
     def __init__(self, color: PieceColor):
         self.color = color
-    
-    def fen_char(self) -> chr:
-        return 'B'
-    
-    def value(self) -> int:
-        return 3
-    
     def move(self) -> None:
         return
 
@@ -171,15 +156,14 @@ class Bishop(Piece):
 
 class Rook(Piece):
     """Class detailing the behavior of a rook."""
+    __slots__ = ("color", "has_not_moved")
+
+    value = 5
+    fen_char = 'R'
+
     def __init__(self, color: PieceColor):
         self.color = color
         self.has_not_moved = True
-    
-    def fen_char(self) -> chr:
-        return 'R'
-    
-    def value(self) -> int:
-        return 5
     
     def move(self) -> None:
         self.has_not_moved = False
@@ -202,20 +186,16 @@ class Rook(Piece):
         can capture a piece on."""
         return self.possible_moves(rank, file)
     
-    def can_castle(self) -> bool:
-        return self.has_not_moved
-    
 
 class Queen(Piece):
     """Class detailing the behavior of a queen."""
+    __slots__ = ("color")
+
+    value = 9
+    fen_char = 'Q'
+
     def __init__(self, color: PieceColor):
         self.color = color
-    
-    def fen_char(self) -> chr:
-        return 'Q'
-    
-    def value(self) -> int:
-        return 9
     
     def move(self) -> None:
         return
@@ -266,15 +246,14 @@ class Queen(Piece):
 
 class King(Piece):
     """Class detailing the behavior of a king."""
+    __slots__ = ("color", "has_not_moved")
+
+    value = 5
+    fen_char = 'K'
+
     def __init__(self, color: PieceColor):
         self.color = color
         self.has_not_moved = True
-    
-    def fen_char(self) -> chr:
-        return 'K'
-    
-    def value(self) -> int:
-        return 5
     
     def move(self) -> None:
         self.has_not_moved = False
@@ -289,7 +268,4 @@ class King(Piece):
         """Returns a list of all valid position tuples that this piece
         can capture a piece on."""
         return self.possible_moves(rank, file)
-    
-    def can_castle(self) -> bool:
-        return self.has_not_moved
 

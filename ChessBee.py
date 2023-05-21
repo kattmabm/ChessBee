@@ -1,25 +1,22 @@
-# import pygame
-from src.engine.board import Board
-# import src.ui.color as color
-# import src.ui.window as win
+import pygame
+from src.ui.components import BoardComponent
+from src.ui.color import Color
+from src.ui.window import Window
 
-# WINDOW = pygame.display.set_mode(win.SIZE)
-# pygame.display.set_caption(win.TITLE)
+# WINDOW = pygame.display.set_mode(Window.SIZE)
+# pygame.display.set_caption(Window.TITLE)
 
 # def draw_window():
-#     WINDOW.fill(color.BOARD_DARK)
+#     WINDOW.fill(Color.BLACK)
 #     pygame.display.update()
 
 def main():
-    b = Board()
-    print()
-    print("Setting up chess board")
-    b.print_squares()
+    board = BoardComponent()
 
     # clock = pygame.time.Clock()
     # run = True
     # while run:
-    #     clock.tick(win.FPS)
+    #     clock.tick(Window.FPS)
     #     for event in pygame.event.get():
     #         if event.type == pygame.QUIT:
     #             run = False
