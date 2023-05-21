@@ -1,6 +1,5 @@
 from src.engine.piece import (
-    Piece, PieceColor, Pawn, Knight, Bishop, Rook, Queen, King
-)
+    Piece, PieceColor, Pawn, Knight, Bishop, Rook, Queen, King )
 
 
 class BoardPosition:
@@ -40,10 +39,10 @@ class Board:
         return ("\n".join([" ".join([str(square) for square in rank]) 
             for rank in reversed(self.squares)]))
     
-    def all_ranks(self) -> tuple:
+    def all_ranks(self) -> tuple():
         return tuple(chr(ord('a')+i) for i in range(8))
     
-    def all_files(self) -> tuple:
+    def all_files(self) -> tuple():
         return tuple(i+1 for i in range(8))
     
     def print_squares(self) -> None:
@@ -67,8 +66,8 @@ class Board:
 
     def capture_piece_at(self, piece: Piece, rank: chr, file: int) -> bool:
         square = self.square_at(rank, file)
-        target_piece = square.piece()
-        if target_piece and piece.color() is not target_piece.color():
+        target_piece = square.piece
+        if target_piece and piece.color is not target_piece.color:
             square.set_piece(piece)
 
     def reset_board(self) -> None:
