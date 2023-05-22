@@ -12,10 +12,10 @@ class BoardPosition:
         self.piece = None
 
     def __str__(self) -> str:
-        if self.piece:
-            return str(self.piece)
-        return "."
-        # return f"{self.rank}{self.file}"
+        # if self.piece:
+        #     return str(self.piece)
+        # return "."
+        return f"{self.rank}{self.file}"
     
     def position(self) -> tuple:
         """Returns the position as a (character, integer) tuple."""

@@ -21,6 +21,12 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+            if event.type == pygame.MOUSEBUTTONUP:
+                pos = pygame.mouse.get_pos()
+                square = [square for rank in BOARD.squares
+                           for square in rank
+                           if square.rect.collidepoint(pos)][0]
+                print(f"Clicked on {str(square.position)}")
         draw_window()
     pygame.quit()
 

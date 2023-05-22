@@ -1,6 +1,6 @@
 import pygame
 from src.engine.board import Board, BoardPosition
-from src.ui.pieces import PieceAssets, drawPiece
+from src.ui.pieces import drawPiece
 from src.ui.color import Color
 from src.ui.window import Window
 
@@ -41,20 +41,20 @@ class SquareComponent:
 
 
 class BoardComponent:
-    __slots__ = ("board", "window", "squareComponents")
+    __slots__ = ("board", "window", "squares")
 
     def __init__(self, window: pygame.Surface):
         self.window = window
         self.board = Board()
         self.board.reset_board()
-        print(self.board)
-        self.squareComponents = tuple(tuple(SquareComponent(square)
+        self.squares = tuple(tuple(SquareComponent(square)
                                             for square in rank)
                                             for rank in self.board.squares)
         
     def draw(self):
-        for rank in self.squareComponents:
+        for rank in self.squares:
             for square in rank:
                 pygame.draw.rect(self.window, square.color, square.rect)
-                drawPiece(square.position.piece, self.window, square.xmin, square.ymin)
+                drawPiece(square.position.piece, self.window,
+                          square.xmin, square.ymin)
                 

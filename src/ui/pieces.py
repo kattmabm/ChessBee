@@ -1,6 +1,7 @@
-from pygame.surface import Surface
-from pygame.image import load
-from pygame.transform import scale
+import pygame
+# from pygame.surface import Surface
+# from pygame.image import load
+# from pygame.transform import scale
 from os import path
 from src.engine.piece import (
     Piece, PieceColor, Pawn, Knight, Bishop, Rook, Queen, King )
@@ -8,7 +9,8 @@ from src.ui.window import Window
 
 SIZE = (Window.SQUARE_SIZE, Window.SQUARE_SIZE)
 
-def drawPiece(piece: Piece, surface: Surface, xmin: int, ymin: int) -> None:
+def drawPiece(piece: Piece, surface: pygame.surface.Surface,
+              xmin: int, ymin: int) -> None:
     if piece.__class__ is Pawn:
         if piece.color == PieceColor.WHITE:
             surface.blit(PieceAssets.PAWN_WHITE, (xmin, ymin))
@@ -42,15 +44,27 @@ def drawPiece(piece: Piece, surface: Surface, xmin: int, ymin: int) -> None:
     
 
 class PieceAssets:
-    PAWN_WHITE = scale(load(path.join("src", "ui", "assets", "PawnWhite.png")), SIZE)
-    PAWN_BLACK = scale(load(path.join("src", "ui", "assets", "PawnBlack.png")), SIZE)
-    KNIGHT_WHITE = scale(load(path.join("src", "ui", "assets", "KnightWhite.png")), SIZE)
-    KNIGHT_BLACK = scale(load(path.join("src", "ui", "assets", "KnightBlack.png")), SIZE)
-    BISHOP_WHITE = scale(load(path.join("src", "ui", "assets", "BishopWhite.png")), SIZE)
-    BISHOP_BLACK = scale(load(path.join("src", "ui", "assets", "BishopBlack.png")), SIZE)
-    ROOK_WHITE = scale(load(path.join("src", "ui", "assets", "RookWhite.png")), SIZE)
-    ROOK_BLACK = scale(load(path.join("src", "ui", "assets", "RookBlack.png")), SIZE)
-    QUEEN_WHITE = scale(load(path.join("src", "ui", "assets", "QueenWhite.png")), SIZE)
-    QUEEN_BLACK = scale(load(path.join("src", "ui", "assets", "QueenBlack.png")), SIZE)
-    KING_WHITE = scale(load(path.join("src", "ui", "assets", "KingWhite.png")), SIZE)
-    KING_BLACK = scale(load(path.join("src", "ui", "assets", "KingBlack.png")), SIZE)
+    PAWN_WHITE = pygame.transform.scale(pygame.image.load(
+        path.join("src", "ui", "assets","PawnWhite.png")), SIZE)
+    PAWN_BLACK = pygame.transform.scale(pygame.image.load(
+        path.join("src", "ui", "assets", "PawnBlack.png")), SIZE)
+    KNIGHT_WHITE = pygame.transform.scale(pygame.image.load(
+        path.join("src", "ui", "assets", "KnightWhite.png")), SIZE)
+    KNIGHT_BLACK = pygame.transform.scale(pygame.image.load(
+        path.join("src", "ui", "assets", "KnightBlack.png")), SIZE)
+    BISHOP_WHITE = pygame.transform.scale(pygame.image.load(
+        path.join("src", "ui", "assets", "BishopWhite.png")), SIZE)
+    BISHOP_BLACK = pygame.transform.scale(pygame.image.load(
+        path.join("src", "ui", "assets", "BishopBlack.png")), SIZE)
+    ROOK_WHITE = pygame.transform.scale(pygame.image.load(
+        path.join("src", "ui", "assets", "RookWhite.png")), SIZE)
+    ROOK_BLACK = pygame.transform.scale(pygame.image.load(
+        path.join("src", "ui", "assets", "RookBlack.png")), SIZE)
+    QUEEN_WHITE = pygame.transform.scale(pygame.image.load(
+        path.join("src", "ui", "assets", "QueenWhite.png")), SIZE)
+    QUEEN_BLACK = pygame.transform.scale(pygame.image.load(
+        path.join("src", "ui", "assets", "QueenBlack.png")), SIZE)
+    KING_WHITE = pygame.transform.scale(pygame.image.load(
+        path.join("src", "ui", "assets", "KingWhite.png")), SIZE)
+    KING_BLACK = pygame.transform.scale(pygame.image.load(
+        path.join("src", "ui", "assets", "KingBlack.png")), SIZE)
