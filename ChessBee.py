@@ -25,8 +25,17 @@ def main():
                 pos = pygame.mouse.get_pos()
                 square = [square for rank in BOARD.squares
                            for square in rank
-                           if square.rect.collidepoint(pos)][0]
-                print(f"Clicked on {str(square.position)}")
+                           if square.rect.collidepoint(pos)]
+                if not square:
+                    continue
+                BOARD.clear_colors()
+                loc = square[0].position
+                BOARD.select_square((loc.rank, loc.file))
+                if loc.piece:
+                    moves = loc.piece.possible_moves(loc.rank, loc.file)
+                    BOARD.hl_squares_g(moves)
+                    captures = loc.piece.possible_captures(loc.rank, loc.file)
+                    BOARD.hl_squares_r(captures)
         draw_window()
     pygame.quit()
 

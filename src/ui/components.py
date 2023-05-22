@@ -16,28 +16,38 @@ def toggle_color(color: SquareColor) -> SquareColor:
 
 
 class SquareComponent:
-    __slots__ = ("position", "color", "rect", "xmin", "ymin")
+    __slots__ = ("position", "rank", "file", "dark", "selected", "hl_green",
+                 "hl_red", "rect", "xmin", "ymin")
 
     def __init__(self, boardPosition: BoardPosition):
         self.position = boardPosition
-        # Get square's rank and file
-        rank = self.position.rank
-        file = self.position.file
-        # Calculate color the square should be
-        self.color = SquareColor.LIGHT if file % 2 == 0 else SquareColor.DARK
-        if rank in ('b', 'd', 'f', 'h'):
-            self.toggle_color()
-        # Position the window
+        self.selected = False
+        self.hl_green = False
+        self.hl_red = False
+        self.rank = self.position.rank
+        self.file = self.position.file
+        self.dark = False if self.file % 2 == 0 else True
+        if self.rank in ('b', 'd', 'f', 'h'):
+            self.dark = not self.dark
         size = Window.SQUARE_SIZE
-        self.xmin = Window.BOARD_XMIN + size*(ord(rank)-ord('a'))
-        self.ymin = Window.BOARD_YMIN + size*(8-file)
+        self.xmin = Window.BOARD_XMIN + size*(ord(self.rank)-ord('a'))
+        self.ymin = Window.BOARD_YMIN + size*(8-self.file)
         self.rect = pygame.Rect(self.xmin, self.ymin, size, size)
 
-    def toggle_color(self) -> None:
-        if self.color is SquareColor.LIGHT:
-            self.color = SquareColor.DARK
-        else:
-            self.color = SquareColor.LIGHT
+    def color(self) -> SquareColor:
+        if self.selected:
+            return Color.BOARD_BLUE
+        if self.dark:
+            if self.hl_red:
+                return Color.BOARD_LIGHT_R
+            if self.hl_green:
+                return Color.BOARD_LIGHT_G
+            return Color.BOARD_LIGHT
+        if self.hl_red:
+            return Color.BOARD_DARK_R
+        if self.hl_green:
+            return Color.BOARD_DARK_G
+        return Color.BOARD_DARK
 
 
 class BoardComponent:
@@ -51,10 +61,37 @@ class BoardComponent:
                                             for square in rank)
                                             for rank in self.board.squares)
         
-    def draw(self):
+    def draw(self) -> None:
         for rank in self.squares:
             for square in rank:
-                pygame.draw.rect(self.window, square.color, square.rect)
+                pygame.draw.rect(self.window, square.color(), square.rect)
                 drawPiece(square.position.piece, self.window,
                           square.xmin, square.ymin)
                 
+    def select_square(self, square: tuple) -> None:
+        rank = ord(square[0]) - ord('a')
+        file = square[1] - 1
+        self.squares[file][rank].selected = True
+
+    def hl_squares_g(self, squares: list[tuple]):
+        for pos in squares:
+            rank = ord(pos[0]) - ord('a')
+            file = pos[1] - 1
+            self.squares[file][rank].hl_green = True
+            
+    def hl_squares_r(self, squares: list[tuple]):
+        for pos in squares:
+            rank = ord(pos[0]) - ord('a')
+            file = pos[1] - 1
+            self.squares[file][rank].hl_red = True
+
+    def clear_colors(self):
+        for rank in self.squares:
+            for square in rank:
+                square.selected = False
+                square.hl_green = False
+                square.hl_red = False
+
+
+
+
