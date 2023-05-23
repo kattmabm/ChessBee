@@ -21,6 +21,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+                continue
             if event.type == pygame.MOUSEBUTTONUP:
                 pos = pygame.mouse.get_pos()
                 squares = [square for rank in BOARD.squares
@@ -29,11 +30,19 @@ def main():
                 if not squares:
                     continue
                 square_component = squares[0]
-                if square_component.selected:
-                    BOARD.clear_colors()
-                    continue
                 BOARD.clear_colors()
-                square = BOARD.board.square_at(square_component.rank, square_component.file)
+                if square_component.selected:
+                    continue
+                rank = square_component.rank
+                file = square_component.file
+                square = BOARD.board.square_at(rank, file)
+                if square_component.highlighted:
+                    old_square = BOARD.selected_square_pos
+                    # piece = old_square.piece
+                    # print(f"Moving {piece.__class__.__name__} from {old_square} to {new_square}.")
+                    BOARD.board.move_piece(old_square, square)
+                    BOARD.board.change_turn()
+                    continue
                 if square.piece and square.piece.color is BOARD.board.current_turn:
                     BOARD.select_square_at(square.rank, square.file)
                     moves = BOARD.board.get_legal_moves(square)
