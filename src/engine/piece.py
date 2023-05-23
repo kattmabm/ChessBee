@@ -20,14 +20,6 @@ class Piece(ABC):
         if self.color == PieceColor.WHITE:
             return TextColor.YELLOW + self.fen_char + TextColor.END
         return TextColor.BLUE + self.fen_char + TextColor.END
-    
-    @abstractmethod
-    def possible_moves(self, rank: chr, file: int) -> list[tuple]:
-        pass
-
-    @abstractmethod
-    def possible_captures(self, rank: chr, file: int) -> list[tuple]:
-        pass
 
 
 class Pawn(Piece):
@@ -45,21 +37,6 @@ class Pawn(Piece):
     def move(self) -> None:
         self.has_not_moved = False
 
-    def possible_moves(self, rank: chr, file: int) -> list[tuple]:
-        moves = [(rank, file+self.direction)]
-        if self.has_not_moved:
-            moves.append((rank, file+(2*self.direction)))
-        return moves
-
-    def possible_captures(self, rank: chr, file: int) -> list[tuple]:
-        captures = []
-        cap_file = file + self.direction
-        if ord(rank) >= ord('b'):
-            captures.append((chr(ord(rank)-1), cap_file))
-        if ord(rank) <= ord('g'):
-            captures.append((chr(ord(rank)+1), cap_file))
-        return captures
-
 
 class Knight(Piece):
     """Class detailing the behavior of a knight."""
@@ -74,37 +51,6 @@ class Knight(Piece):
     def move(self) -> None:
         return
 
-    def possible_moves(self, rank: chr, file: int) -> list[tuple]:
-        """Returns a list of all valid position tuples that this piece
-        can move to."""
-        moves = []
-        if ord(rank) >= ord('c'):
-            if file >= 2:
-                moves.append((chr(ord(rank)-2), file-1))
-            if file <= 7:
-                moves.append((chr(ord(rank)-2), file+1))
-        if ord(rank) >= ord('b'):
-            if file >= 3:
-                moves.append((chr(ord(rank)-1), file-2))
-            if file <= 6:
-                moves.append((chr(ord(rank)-1), file+2))
-        if ord(rank) <= ord('f'):
-            if file >= 2:
-                moves.append((chr(ord(rank)+2), file-1))
-            if file <= 7:
-                moves.append((chr(ord(rank)+2), file+1))
-        if ord(rank) <= ord('g'):
-            if file >= 3:
-                moves.append((chr(ord(rank)+1), file-2))
-            if file <= 6:
-                moves.append((chr(ord(rank)+1), file+2))
-        return moves
-
-    def possible_captures(self, rank: chr, file: int) -> list[tuple]:
-        """Returns a list of all valid position tuples that this piece
-        can capture a piece on."""
-        return self.possible_moves(rank, file)
-
 
 class Bishop(Piece):
     """Class detailing the behavior of a bishop."""
@@ -117,38 +63,6 @@ class Bishop(Piece):
         self.color = color
     def move(self) -> None:
         return
-
-    def possible_moves(self, rank: chr, file: int) -> list[tuple]:
-        """Returns a list of all valid position tuples that this piece
-        can move to."""
-        moves = []
-        r = ord(rank) - 1
-        f = file - 1
-        while r >= ord('a') and f >= 1:
-            moves.append((chr(r), f))
-            r -= 1
-            f -= 1
-        r = ord(rank) + 1
-        f = file - 1
-        while r <= ord('h') and f >= 1:
-            moves.append((chr(r), f))
-            r += 1
-            f -= 1
-        r = ord(rank) + 1
-        f = file + 1
-        while r <= ord('h') and f <= 8:
-            moves.append((chr(r), f))
-            r += 1
-            f += 1
-        r = ord(rank) - 1
-        f = file + 1
-        while r >= ord('a') and f <= 8:
-            moves.append((chr(r), f))
-            r -= 1
-            f += 1
-        return moves
-
-    def possible_captures(self, rank: chr, file: int) -> list[tuple]:
         """Returns a list of all valid position tuples that this piece
         can capture a piece on."""
         return self.possible_moves(rank, file)
@@ -161,32 +75,13 @@ class Rook(Piece):
     value = 5
     fen_char = 'R'
 
-    def __init__(self, color: PieceColor):
+    def __init__(self, color: PieceColor, can_castle: bool = True):
         self.color = color
-        self.has_not_moved = True
+        self.has_not_moved = can_castle
     
     def move(self) -> None:
         self.has_not_moved = False
 
-    def possible_moves(self, rank: chr, file: int) -> list[tuple]:
-        """Returns a list of all valid position tuples that this piece
-        can move to."""
-        moves = []
-        for r in range(ord('a'), ord('h')+1):
-            if r == ord(rank):
-                continue
-            moves.append((chr(r), file))
-        for f in range(8):
-            if f+1 == file:
-                continue
-            moves.append((rank, f+1))
-        return moves
-
-    def possible_captures(self, rank: chr, file: int) -> list[tuple]:
-        """Returns a list of all valid position tuples that this piece
-        can capture a piece on."""
-        return self.possible_moves(rank, file)
-    
 
 class Queen(Piece):
     """Class detailing the behavior of a queen."""
@@ -258,31 +153,4 @@ class King(Piece):
     
     def move(self) -> None:
         self.has_not_moved = False
-
-    def possible_moves(self, rank: chr, file: int) -> list[tuple]:
-        """Returns a list of all valid position tuples that this piece
-        can move to."""
-        moves = []
-        if ord(rank) >= ord('b'):
-            moves.append((chr(ord(rank)-1), file))
-            if file >= 2:
-                moves.append((chr(ord(rank)-1), file-1))
-            if file <= 7:
-                moves.append((chr(ord(rank)-1), file+1))
-        if ord(rank) <= ord('g'):
-            moves.append((chr(ord(rank)+1), file))
-            if file >= 2:
-                moves.append((chr(ord(rank)+1), file-1))
-            if file <= 7:
-                moves.append((chr(ord(rank)+1), file+1))
-        if file >= 2:
-            moves.append((rank, file-1))
-        if file <= 7:
-            moves.append((rank, file+1))
-        return moves
-    
-    def possible_captures(self, rank: chr, file: int) -> list[tuple]:
-        """Returns a list of all valid position tuples that this piece
-        can capture a piece on."""
-        return self.possible_moves(rank, file)
 

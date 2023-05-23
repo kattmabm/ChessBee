@@ -23,19 +23,22 @@ def main():
                 run = False
             if event.type == pygame.MOUSEBUTTONUP:
                 pos = pygame.mouse.get_pos()
-                square = [square for rank in BOARD.squares
+                squares = [square for rank in BOARD.squares
                            for square in rank
                            if square.rect.collidepoint(pos)]
-                if not square:
+                if not squares:
+                    continue
+                square_component = squares[0]
+                if square_component.selected:
+                    BOARD.clear_colors()
                     continue
                 BOARD.clear_colors()
-                loc = square[0].position
-                BOARD.select_square((loc.rank, loc.file))
-                if loc.piece:
-                    moves = loc.piece.possible_moves(loc.rank, loc.file)
-                    BOARD.hl_squares_g(moves)
-                    captures = loc.piece.possible_captures(loc.rank, loc.file)
-                    BOARD.hl_squares_r(captures)
+                square = BOARD.board.square_at(square_component.rank, square_component.file)
+                if square.piece and square.piece.color is BOARD.board.current_turn:
+                    BOARD.select_square_at(square.rank, square.file)
+                    moves = BOARD.board.get_legal_moves(square)
+                    for move in moves:
+                        BOARD.hl_square_at(move.rank, move.file)
         draw_window()
     pygame.quit()
 

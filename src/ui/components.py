@@ -9,11 +9,6 @@ class SquareColor:
     LIGHT = Color.BOARD_LIGHT
     DARK  = Color.BOARD_DARK
 
-def toggle_color(color: SquareColor) -> SquareColor:
-    if color is SquareColor.LIGHT:
-        return SquareColor.DARK
-    return SquareColor.LIGHT
-
 
 class SquareComponent:
     __slots__ = ("position", "rank", "file", "dark", "selected", "hl_green",
@@ -68,22 +63,15 @@ class BoardComponent:
                 drawPiece(square.position.piece, self.window,
                           square.xmin, square.ymin)
                 
-    def select_square(self, square: tuple) -> None:
-        rank = ord(square[0]) - ord('a')
-        file = square[1] - 1
+    def select_square_at(self, rank: chr, file: int) -> None:
+        rank = ord(rank) - ord('a')
+        file = file - 1
         self.squares[file][rank].selected = True
 
-    def hl_squares_g(self, squares: list[tuple]):
-        for pos in squares:
-            rank = ord(pos[0]) - ord('a')
-            file = pos[1] - 1
-            self.squares[file][rank].hl_green = True
-            
-    def hl_squares_r(self, squares: list[tuple]):
-        for pos in squares:
-            rank = ord(pos[0]) - ord('a')
-            file = pos[1] - 1
-            self.squares[file][rank].hl_red = True
+    def hl_square_at(self, rank: chr, file: int) -> None:
+        rank = ord(rank) - ord('a')
+        file = file - 1
+        self.squares[file][rank].hl_green = True
 
     def clear_colors(self):
         for rank in self.squares:
@@ -91,7 +79,4 @@ class BoardComponent:
                 square.selected = False
                 square.hl_green = False
                 square.hl_red = False
-
-
-
 
