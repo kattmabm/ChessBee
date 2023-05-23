@@ -1,6 +1,7 @@
 import pygame
 from src.ui.components import BoardComponent
 from src.ui.color import Color
+from src.ui.text import Text
 from src.ui.window import Window
 
 WINDOW = pygame.display.set_mode(Window.SIZE)

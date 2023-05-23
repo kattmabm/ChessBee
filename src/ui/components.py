@@ -2,6 +2,7 @@ import pygame
 from src.engine.board import Board, BoardPosition
 from src.ui.pieceAssets import drawPiece
 from src.ui.color import Color
+from src.ui.text import Label
 from src.ui.window import Window
 
 
@@ -41,7 +42,8 @@ class SquareComponent:
 
 
 class BoardComponent:
-    __slots__ = ("board", "window", "squares", "selected_square_pos")
+    __slots__ = ("board", "window", "squares", "selected_square_pos",
+                 "rank_labels")
 
     def __init__(self, window: pygame.Surface):
         self.window = window
@@ -50,6 +52,7 @@ class BoardComponent:
         self.squares = tuple(tuple(SquareComponent(square) 
                                    for square in rank) 
                                    for rank in self.board.squares)
+        self.rank_labels = RankFileLabels(self)
         self.selected_square_pos = None
         
     def draw(self) -> None:
@@ -58,6 +61,7 @@ class BoardComponent:
                 pygame.draw.rect(self.window, square.color(), square.rect)
                 drawPiece(square.position.piece, self.window,
                           square.xmin, square.ymin)
+        self.rank_labels.draw()
                 
     def select_square_at(self, rank: chr, file: int) -> None:
         self.selected_square_pos = self.board.square_at(rank, file)
@@ -76,4 +80,34 @@ class BoardComponent:
             for square in rank:
                 square.selected = False
                 square.highlighted = False
+
+
+class RankFileLabels:
+    __slots__ = ("window", "rank_labels", "file_labels")
+
+    def __init__(self, board: BoardComponent):
+        self.window = board.window
+        all_ranks = board.board.all_ranks()
+        all_files = board.board.all_files()
+        self.rank_labels = []
+        self.file_labels = []
+        size = Window.SQUARE_SIZE
+        font_size = 20
+        offset = 5
+        for rank in all_ranks:
+            xcenter = Window.BOARD_XMIN + size*(ord(rank)-ord('a') + 1/2)
+            ycenter = Window.BOARD_YMIN + 8*size + font_size/2 + offset
+            rank_label = Label(self.window, rank, xcenter, ycenter, font_size)
+            self.rank_labels.append(rank_label)
+        for file in all_files:
+            xcenter = Window.BOARD_XMIN - font_size/2 - offset
+            ycenter = Window.BOARD_YMIN + size*(8-file + 1/2)
+            file_label = Label(self.window, str(file), xcenter, ycenter, font_size)
+            self.file_labels.append(file_label)
+
+    def draw(self):
+        for rank_label in self.rank_labels:
+            self.window.blit(rank_label.image, rank_label.rect)
+        for file_label in self.file_labels:
+            self.window.blit(file_label.image, file_label.rect)
 
