@@ -58,11 +58,24 @@ class Board:
         rank = ord(rank)-ord('a')
         file = file-1
         return self.squares[file][rank]
-    
+
     def place_piece_at(self, piece: Piece, rank: chr, file: int) -> bool:
         square = self.square_at(rank, file)
         return square.set_piece(piece)
-    
+
+    def move_piece(self, old: BoardPosition, new: BoardPosition) -> None:
+        piece = old.piece
+        piece.move()
+        new.set_piece(piece)
+        old.set_piece(None)
+
+    def change_turn(self) -> PieceColor:
+        if self.current_turn is PieceColor.WHITE:
+            self.current_turn = PieceColor.BLACK
+            return PieceColor.BLACK
+        self.current_turn = PieceColor.WHITE
+        return PieceColor.WHITE
+
     def get_legal_moves(self, position: BoardPosition) -> List[BoardPosition]:
         if not position.piece:
             return []
@@ -287,49 +300,36 @@ class Board:
         if (ord(rank) >= ord('b')):
             if file >= 2:
                 square = self.square_at(chr(ord(rank)-1), file-1)
-                if square.piece and square.piece.color is not color:
+                if not square.piece or square.piece.color is not color:
                     king_moves.append(square)
             if file <= 7:
                 square = self.square_at(chr(ord(rank)-1), file+1)
-                if square.piece and square.piece.color is not color:
+                if not square.piece or square.piece.color is not color:
                     king_moves.append(square)
             square = self.square_at(chr(ord(rank)-1), file)
-            if square.piece and square.piece.color is not color:
+            if not square.piece or square.piece.color is not color:
                 king_moves.append(square)
         if (ord(rank) <= ord('g')):
             if file >= 2:
                 square = self.square_at(chr(ord(rank)+1), file-1)
-                if square.piece and square.piece.color is not color:
+                if not square.piece or square.piece.color is not color:
                     king_moves.append(square)
             if file <= 7:
                 square = self.square_at(chr(ord(rank)+1), file+1)
-                if square.piece and square.piece.color is not color:
+                if not square.piece or square.piece.color is not color:
                     king_moves.append(square)
             square = self.square_at(chr(ord(rank)+1), file)
-            if square.piece and square.piece.color is not color:
+            if not square.piece or square.piece.color is not color:
                 king_moves.append(square)
         if file >= 2:
             square = self.square_at(rank, file-1)
-            if square.piece and square.piece.color is not color:
+            if not square.piece or square.piece.color is not color:
                 king_moves.append(square)
         if file <= 7:
             square = self.square_at(rank, file+1)
-            if square.piece and square.piece.color is not color:
+            if not square.piece or square.piece.color is not color:
                 king_moves.append(square)
         return king_moves
-
-
-    # def move_piece_to(self, piece: Piece, rank: chr, file: int) -> bool:
-    #     square = self.square_at(rank, file)
-    #     if square.piece():
-    #         return False
-    #     square.set_piece(piece)
-
-    # def capture_piece_at(self, piece: Piece, rank: chr, file: int) -> bool:
-    #     square = self.square_at(rank, file)
-    #     target_piece = square.piece
-    #     if target_piece and piece.color is not target_piece.color:
-    #         square.set_piece(piece)
 
     def reset_board(self) -> None:
         for rank in self.all_ranks():

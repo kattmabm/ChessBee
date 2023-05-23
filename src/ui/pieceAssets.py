@@ -1,7 +1,4 @@
 import pygame
-# from pygame.surface import Surface
-# from pygame.image import load
-# from pygame.transform import scale
 from os import path
 from src.engine.piece import (
     Piece, PieceColor, Pawn, Knight, Bishop, Rook, Queen, King )
@@ -68,3 +65,4 @@ class PieceAssets:
         path.join("src", "ui", "assets", "KingWhite.png")), SIZE)
     KING_BLACK = pygame.transform.scale(pygame.image.load(
         path.join("src", "ui", "assets", "KingBlack.png")), SIZE)
+

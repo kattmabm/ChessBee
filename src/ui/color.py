@@ -10,3 +10,4 @@ class Color:
     BOARD_DARK_R    = (160,  70,  50)
     BOARD_DARK_G    = ( 70, 160,  50)
     BOARD_BLUE      = ( 80, 100, 240)
+
