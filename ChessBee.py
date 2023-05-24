@@ -39,11 +39,12 @@ def main():
                 square = BOARD.board.square_at(rank, file)
                 if square_component.highlighted:
                     old_square = BOARD.selected_square_pos
-                    # piece = old_square.piece
-                    # print(f"Moving {piece.__class__.__name__} from {old_square} to {new_square}.")
                     BOARD.board.move_piece(old_square, square)
                     BOARD.board.change_turn()
                     BOARD.clear_colors()
+                    status = BOARD.board.game_status()
+                    if status:
+                        run = False
                     continue
                 BOARD.clear_colors()
                 if square.piece and square.piece.color is BOARD.board.current_turn:

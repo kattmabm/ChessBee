@@ -21,9 +21,12 @@ class BoardPosition:
     def position(self) -> tuple:
         """Returns the position as a (character, integer) tuple."""
         return (self.rank, self.file)
-    
-    def set_piece(self, new_piece) -> bool:
-        self.piece = new_piece
+
+
+class GameStatus:
+    PLAY = 0
+    CHECKMATE = 1
+    STALEMATE = 2
 
 
 class Board:
@@ -31,7 +34,6 @@ class Board:
     __slots__ = ("squares", "current_turn")
     
     def __init__(self):
-        print("WARNING: Moves not yet validated. A player can put themself in check!")
         print("WARNING: Castling not yet implemented.")
         print("WARNING: en passant not yet implemented.")
         self.squares = tuple(tuple(BoardPosition(rank, file)
@@ -66,8 +68,10 @@ class Board:
     def move_piece(self, old: BoardPosition, new: BoardPosition) -> None:
         piece = old.piece
         piece.move()
-        new.set_piece(piece)
-        old.set_piece(None)
+        # If this is en passant, remove the pawn at the old position
+        # If this is castling, move both the king and rook
+        new.piece = old.piece
+        old.piece = None
 
     def change_turn(self) -> PieceColor:
         if self.current_turn is PieceColor.WHITE:
@@ -76,24 +80,25 @@ class Board:
         self.current_turn = PieceColor.WHITE
         return PieceColor.WHITE
 
-    def get_legal_moves(self, position: BoardPosition) -> List[BoardPosition]:
-        if not position.piece:
-            return []
+    def get_legal_moves(self, position: BoardPosition, shallow=False) -> List[BoardPosition]:
+        moves = []
         if position.piece.__class__ is Pawn:
-            return self.get_legal_pawn_moves(position)
+            moves = self.get_pawn_moves(position)
         elif position.piece.__class__ is Knight:
-            return self.get_legal_knight_moves(position)
+            moves = self.get_knight_moves(position)
         elif position.piece.__class__ is Bishop:
-            return self.get_legal_bishop_moves(position)
+            moves = self.get_bishop_moves(position)
         elif position.piece.__class__ is Rook:
-            return self.get_legal_rook_moves(position)
+            moves = self.get_rook_moves(position)
         elif position.piece.__class__ is Queen:
-            return self.get_legal_queen_moves(position)
+            moves = self.get_queen_moves(position)
         elif position.piece.__class__ is King:
-            return self.get_legal_king_moves(position)
-        return []
+            moves = self.get_king_moves(position)
+        if shallow:
+            return moves
+        return self.validate_moves(position, moves)
         
-    def get_legal_pawn_moves(self, position: BoardPosition) -> List[BoardPosition]:
+    def get_pawn_moves(self, position: BoardPosition) -> List[BoardPosition]:
         pawn_moves = []
         pawn = position.piece
         color = pawn.color
@@ -122,7 +127,7 @@ class Board:
                 pawn_moves.append(square)
         return pawn_moves
     
-    def get_legal_knight_moves(self, position: BoardPosition) -> List[BoardPosition]:
+    def get_knight_moves(self, position: BoardPosition) -> List[BoardPosition]:
         knight_moves = []
         knight = position.piece
         color = knight.color
@@ -174,7 +179,7 @@ class Board:
                     knight_moves.append(square)
         return knight_moves       
 
-    def get_legal_bishop_moves(self, position: BoardPosition) -> List[BoardPosition]:
+    def get_bishop_moves(self, position: BoardPosition) -> List[BoardPosition]:
         bishop_moves = []
         bishop = position.piece
         color = bishop.color
@@ -234,7 +239,7 @@ class Board:
             current_file = current_file+1
         return bishop_moves
 
-    def get_legal_rook_moves(self, position: BoardPosition) -> List[BoardPosition]:
+    def get_rook_moves(self, position: BoardPosition) -> List[BoardPosition]:
         rook_moves = []
         rook = position.piece
         color = rook.color
@@ -286,12 +291,12 @@ class Board:
             current_file = current_file-1
         return rook_moves
 
-    def get_legal_queen_moves(self, position: BoardPosition) -> List[BoardPosition]:
-        bishop_moves = self.get_legal_bishop_moves(position)
-        rook_moves = self.get_legal_rook_moves(position)
+    def get_queen_moves(self, position: BoardPosition) -> List[BoardPosition]:
+        bishop_moves = self.get_bishop_moves(position)
+        rook_moves = self.get_rook_moves(position)
         return bishop_moves + rook_moves
         
-    def get_legal_king_moves(self, position: BoardPosition) -> List[BoardPosition]:
+    def get_king_moves(self, position: BoardPosition) -> List[BoardPosition]:
         king_moves = []
         king = position.piece
         color = king.color
@@ -331,33 +336,79 @@ class Board:
                 king_moves.append(square)
         return king_moves
 
+    def validate_moves(self, old_square: BoardPosition, potential_moves: List[BoardPosition]) -> List[BoardPosition]:
+        """Ensure none of the potential moves leave the player's king in check."""
+        valid_moves = []
+        for new_square in potential_moves:
+            moving_piece = old_square.piece
+            target_piece = new_square.piece
+            new_square.piece = moving_piece
+            old_square.piece = None
+            if not self.king_in_check(self.current_turn):
+                valid_moves.append(new_square)
+            new_square.piece = target_piece
+            old_square.piece = moving_piece
+        return valid_moves
+    
+    def king_in_check(self, color: PieceColor) -> bool:
+        targeted_squares = []
+        king_at = None
+        for rank in self.all_ranks():
+            for file in self.all_files():
+                square = self.square_at(rank, file)
+                if not square.piece:
+                    continue
+                if square.piece.color is color and square.piece.__class__ is King:
+                    king_at = square
+                if square.piece.color is color:
+                    continue
+                targeted_squares += self.get_legal_moves(square, shallow=True)
+        return king_at in targeted_squares
+
+    def game_status(self) -> GameStatus:
+        for rank in self.all_ranks():
+            for file in self.all_files():
+                square = self.square_at(rank, file)
+                if not square.piece:
+                    continue
+                if square.piece.color is not self.current_turn:
+                    continue
+                if self.get_legal_moves(square):
+                    return GameStatus.PLAY
+        in_check = self.king_in_check(self.current_turn)
+        if in_check:
+            print(f"Checkmate! {self.current_turn} lost.")
+            return GameStatus.CHECKMATE
+        print("Stalemate!")
+        return GameStatus.STALEMATE
+        
     def reset_board(self) -> None:
         for rank in self.all_ranks():
             for file in self.all_files():
-                self.square_at(rank, file).set_piece(None)
+                self.square_at(rank, file).piece = None
         # Pawns
         for rank in self.all_ranks():
-            self.square_at(rank, 2).set_piece(Pawn(PieceColor.WHITE))
-            self.square_at(rank, 7).set_piece(Pawn(PieceColor.BLACK))
+            self.square_at(rank, 2).piece = Pawn(PieceColor.WHITE)
+            self.square_at(rank, 7).piece = Pawn(PieceColor.BLACK)
         # Rooks
-        self.square_at('a', 1).set_piece(Rook(PieceColor.WHITE))
-        self.square_at('h', 1).set_piece(Rook(PieceColor.WHITE))
-        self.square_at('a', 8).set_piece(Rook(PieceColor.BLACK))
-        self.square_at('h', 8).set_piece(Rook(PieceColor.BLACK))
+        self.square_at('a', 1).piece = Rook(PieceColor.WHITE)
+        self.square_at('h', 1).piece = Rook(PieceColor.WHITE)
+        self.square_at('a', 8).piece = Rook(PieceColor.BLACK)
+        self.square_at('h', 8).piece = Rook(PieceColor.BLACK)
         # Knights
-        self.square_at('b', 1).set_piece(Knight(PieceColor.WHITE))
-        self.square_at('g', 1).set_piece(Knight(PieceColor.WHITE))
-        self.square_at('b', 8).set_piece(Knight(PieceColor.BLACK))
-        self.square_at('g', 8).set_piece(Knight(PieceColor.BLACK))
+        self.square_at('b', 1).piece = Knight(PieceColor.WHITE)
+        self.square_at('g', 1).piece = Knight(PieceColor.WHITE)
+        self.square_at('b', 8).piece = Knight(PieceColor.BLACK)
+        self.square_at('g', 8).piece = Knight(PieceColor.BLACK)
         # Bishops
-        self.square_at('c', 1).set_piece(Bishop(PieceColor.WHITE))
-        self.square_at('f', 1).set_piece(Bishop(PieceColor.WHITE))
-        self.square_at('c', 8).set_piece(Bishop(PieceColor.BLACK))
-        self.square_at('f', 8).set_piece(Bishop(PieceColor.BLACK))
+        self.square_at('c', 1).piece = Bishop(PieceColor.WHITE)
+        self.square_at('f', 1).piece = Bishop(PieceColor.WHITE)
+        self.square_at('c', 8).piece = Bishop(PieceColor.BLACK)
+        self.square_at('f', 8).piece = Bishop(PieceColor.BLACK)
         # Queens
-        self.square_at('d', 1).set_piece(Queen(PieceColor.WHITE))
-        self.square_at('d', 8).set_piece(Queen(PieceColor.BLACK))
+        self.square_at('d', 1).piece = Queen(PieceColor.WHITE)
+        self.square_at('d', 8).piece = Queen(PieceColor.BLACK)
         # Kings
-        self.square_at('e', 1).set_piece(King(PieceColor.WHITE))
-        self.square_at('e', 8).set_piece(King(PieceColor.BLACK))
+        self.square_at('e', 1).piece = King(PieceColor.WHITE)
+        self.square_at('e', 8).piece = King(PieceColor.BLACK)
 
