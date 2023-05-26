@@ -37,7 +37,7 @@ class Pawn(Piece):
     def __init__(self, color: PieceColor):
         self.color = color
         self.direction = 1 if color == PieceColor.WHITE else -1
-        self.last_moved = 0
+        self.last_moved = -1
     
     def move(self, turn: int) -> None:
         self.last_moved = turn

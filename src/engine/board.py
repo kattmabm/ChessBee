@@ -124,7 +124,7 @@ class Board:
             pawn_moves.append(square)
         # Move forward two
         square = self.square_at(rank, file+(2*direction))
-        if not square.piece and not pawn.last_moved:
+        if not square.piece and pawn.last_moved == -1:
             pawn_moves.append(square)
         # Capture to left
         if rank >= 'b':
