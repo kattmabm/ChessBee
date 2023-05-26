@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
+from enum import Enum
 
 
-class PieceColor:
+class PieceColor(Enum):
     WHITE = 0
     BLACK = 1
 
@@ -146,7 +147,7 @@ class King(Piece):
     """Class detailing the behavior of a king."""
     __slots__ = ("color", "has_not_moved")
 
-    value = 5
+    value = 15
     fen_char = 'K'
 
     def __init__(self, color: PieceColor):

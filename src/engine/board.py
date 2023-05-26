@@ -34,8 +34,6 @@ class Board:
     __slots__ = ("squares", "current_turn", "current_move")
     
     def __init__(self):
-        print("WARNING: Castling not yet implemented.")
-        print("WARNING: en passant not yet implemented.")
         self.squares = tuple(tuple(BoardPosition(rank, file)
                                    for rank in self.all_ranks())
                              for file in self.all_files())
@@ -73,6 +71,16 @@ class Board:
             if not old.rank == new.rank and not new.piece:
                 self.square_at(new.rank, old.file).piece = None
         # If this is castling, move both the king and rook
+        if piece.__class__ is King:
+            rank_diff = ord(new.rank) - ord(old.rank)
+            if rank_diff == -2:
+                # Castling queenside
+                self.square_at('a', old.file).piece = None
+                self.square_at('d', old.file).piece = Rook(piece.color, False)
+            elif rank_diff == 2:
+                # Castling kingside
+                self.square_at('h', old.file).piece = None
+                self.square_at('f', old.file).piece = Rook(piece.color, False)
         piece.move(self.current_move)
         new.piece = old.piece
         old.piece = None
@@ -98,7 +106,7 @@ class Board:
         elif position.piece.__class__ is Queen:
             moves = self.get_queen_moves(position)
         elif position.piece.__class__ is King:
-            moves = self.get_king_moves(position)
+            moves = self.get_king_moves(position, shallow)
         if shallow:
             return moves
         return self.validate_moves(position, moves)
@@ -313,7 +321,7 @@ class Board:
         rook_moves = self.get_rook_moves(position)
         return bishop_moves + rook_moves
         
-    def get_king_moves(self, position: BoardPosition) -> List[BoardPosition]:
+    def get_king_moves(self, position: BoardPosition, shallow=False) -> List[BoardPosition]:
         king_moves = []
         king = position.piece
         color = king.color
@@ -351,6 +359,31 @@ class Board:
             square = self.square_at(rank, file+1)
             if not square.piece or square.piece.color is not color:
                 king_moves.append(square)
+        # Castling
+        if shallow:
+            return king_moves
+        # Kingside
+        if king.has_not_moved:
+            bishop = self.square_at('f', file)
+            knight = self.square_at('g', file)
+            rook = self.square_at('h', file)
+            if not (bishop.piece or knight.piece or
+                    not rook.piece.__class__ is Rook or
+                    not rook.piece.has_not_moved or
+                    self.square_attacked(bishop, color) or 
+                    self.square_attacked(knight, color)):
+                king_moves.append(knight)
+            # Queenside
+            queen = self.square_at('d', file)
+            bishop = self.square_at('c', file)
+            knight = self.square_at('b', file)
+            rook = self.square_at('a', file)
+            if not (queen.piece or bishop.piece or knight.piece or
+                    not rook.piece.__class__ is Rook or
+                    not rook.piece.has_not_moved or
+                    self.square_attacked(queen, color) or
+                    self.square_attacked(bishop, color)):
+                king_moves.append(bishop)
         return king_moves
 
     def validate_moves(self, old_square: BoardPosition, potential_moves: List[BoardPosition]) -> List[BoardPosition]:
@@ -381,6 +414,18 @@ class Board:
                     continue
                 targeted_squares += self.get_legal_moves(square, shallow=True)
         return king_at in targeted_squares
+    
+    def square_attacked(self, square: BoardPosition, defend_color: PieceColor) -> bool:
+        for rank in self.all_ranks():
+            for file in self.all_files():
+                attacking_square = self.square_at(rank, file)
+                if not attacking_square.piece:
+                    continue
+                if attacking_square.piece.color is defend_color:
+                    continue
+                if square in self.get_legal_moves(attacking_square, shallow=True):
+                    return True
+        return False
 
     def game_status(self) -> GameStatus:
         for rank in self.all_ranks():
