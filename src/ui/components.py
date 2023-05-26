@@ -22,7 +22,7 @@ class SquareComponent:
         self.rank = self.position.rank
         self.file = self.position.file
         self.dark = False if self.file % 2 == 0 else True
-        if self.rank in ('b', 'd', 'f', 'h'):
+        if self.rank in ('a', 'c', 'e', 'g'):
             self.dark = not self.dark
         size = Window.SQUARE_SIZE
         self.xmin = Window.BOARD_XMIN + size*(ord(self.rank)-ord('a'))
