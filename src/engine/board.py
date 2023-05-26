@@ -31,7 +31,7 @@ class GameStatus:
 
 class Board:
     """Store information on the location of each piece."""
-    __slots__ = ("squares", "current_turn")
+    __slots__ = ("squares", "current_turn", "current_move")
     
     def __init__(self):
         print("WARNING: Castling not yet implemented.")
@@ -41,6 +41,7 @@ class Board:
                              for file in self.all_files())
         self.reset_board()
         self.current_turn = PieceColor.WHITE
+        self.current_move = 0
         
     def __str__(self) -> str:
         return ("\n".join([" ".join([str(square) for square in rank]) 
@@ -67,11 +68,15 @@ class Board:
 
     def move_piece(self, old: BoardPosition, new: BoardPosition) -> None:
         piece = old.piece
-        piece.move()
         # If this is en passant, remove the pawn at the old position
+        if piece.__class__ is Pawn:
+            if not old.rank == new.rank and not new.piece:
+                self.square_at(new.rank, old.file).piece = None
         # If this is castling, move both the king and rook
+        piece.move(self.current_move)
         new.piece = old.piece
         old.piece = None
+        self.current_move += 1
 
     def change_turn(self) -> PieceColor:
         if self.current_turn is PieceColor.WHITE:
@@ -111,7 +116,7 @@ class Board:
             pawn_moves.append(square)
         # Move forward two
         square = self.square_at(rank, file+(2*direction))
-        if not square.piece and pawn.has_not_moved:
+        if not square.piece and not pawn.last_moved:
             pawn_moves.append(square)
         # Capture to left
         if rank >= 'b':
@@ -119,11 +124,23 @@ class Board:
             square = self.square_at(prev_rank, file+direction)
             if square.piece and square.piece.color is not color:
                 pawn_moves.append(square)
+            # En passant left
+            adj_square = self.square_at(prev_rank, file)
+            if (adj_square.piece and adj_square.piece.__class__ is Pawn and
+                    adj_square.piece.color is not color and
+                    self.current_move - adj_square.piece.last_moved == 1):
+                pawn_moves.append(square)
         # Capture to right
         if rank <= 'g':
             next_rank = chr(ord(rank)+1)
             square = self.square_at(next_rank, file+direction)
             if square.piece and square.piece.color is not color:
+                pawn_moves.append(square)
+            # En passant right
+            adj_square = self.square_at(next_rank, file)
+            if (adj_square.piece and adj_square.piece.__class__ is Pawn and
+                    adj_square.piece.color is not color and
+                    self.current_move - adj_square.piece.last_moved == 1):
                 pawn_moves.append(square)
         return pawn_moves
     

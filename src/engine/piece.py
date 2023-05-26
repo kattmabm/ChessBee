@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 
 
 class PieceColor:
@@ -14,17 +14,21 @@ class TextColor:
 
 class Piece(ABC):
     """Abstract class detailing the properties of a chess piece."""
-    __slots__ = ("color", "value", "fen_char")
+    __slots__ = ("color")
 
     def __str__(self):
         if self.color == PieceColor.WHITE:
             return TextColor.YELLOW + self.fen_char + TextColor.END
         return TextColor.BLUE + self.fen_char + TextColor.END
+    
+    @abstractmethod
+    def move(self, turn: int) -> None:
+        pass
 
 
 class Pawn(Piece):
     """Class detailing the behavior of a pawn."""
-    __slots__ = ("color", "direction", "has_not_moved")
+    __slots__ = ("color", "direction", "last_moved")
 
     value = 1
     fen_char = 'p'
@@ -32,10 +36,10 @@ class Pawn(Piece):
     def __init__(self, color: PieceColor):
         self.color = color
         self.direction = 1 if color == PieceColor.WHITE else -1
-        self.has_not_moved = True
+        self.last_moved = 0
     
-    def move(self) -> None:
-        self.has_not_moved = False
+    def move(self, turn: int) -> None:
+        self.last_moved = turn
 
 
 class Knight(Piece):
@@ -48,7 +52,7 @@ class Knight(Piece):
     def __init__(self, color: PieceColor):
         self.color = color
     
-    def move(self) -> None:
+    def move(self, turn: int) -> None:
         return
 
 
@@ -61,11 +65,9 @@ class Bishop(Piece):
 
     def __init__(self, color: PieceColor):
         self.color = color
-    def move(self) -> None:
+
+    def move(self, turn: int) -> None:
         return
-        """Returns a list of all valid position tuples that this piece
-        can capture a piece on."""
-        return self.possible_moves(rank, file)
     
 
 class Rook(Piece):
@@ -79,7 +81,7 @@ class Rook(Piece):
         self.color = color
         self.has_not_moved = can_castle
     
-    def move(self) -> None:
+    def move(self, turn: int) -> None:
         self.has_not_moved = False
 
 
@@ -93,7 +95,7 @@ class Queen(Piece):
     def __init__(self, color: PieceColor):
         self.color = color
     
-    def move(self) -> None:
+    def move(self, turn: int) -> None:
         return
 
     def possible_moves(self, rank: chr, file: int) -> list[tuple]:
@@ -151,6 +153,6 @@ class King(Piece):
         self.color = color
         self.has_not_moved = True
     
-    def move(self) -> None:
+    def move(self, turn: int) -> None:
         self.has_not_moved = False
 
